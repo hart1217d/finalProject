@@ -30,7 +30,6 @@ def after_request(response):
 @login_required
 def index():
     user_id = session["user_id"]
-    "show history"
     return render_template("index.html")
 
 @app.route("/login", methods=["GET", "POST"])
