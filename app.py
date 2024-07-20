@@ -1,11 +1,11 @@
 import os
 
 import sqlite3
-# need a module that will serve to update SQL databases (from cs50 import SQL)
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import login_required
+
 
 # Configure application
 app = Flask(__name__)
@@ -50,21 +50,17 @@ def login():
             return render_template("login.html")
         
         # Query database for username
-        rows = cur.execute(
+        cur.execute(
             "SELECT * FROM users WHERE username = ?", [request.form.get("username")] 
         )
+        user = cur.fetchone()
 
         # Ensure username exists and password is correct
-        if rows.fetchone() is None or not check_password_hash(
-            rows[2], request.form.get("password")
-        ):
+        if user and check_password_hash(user[2], request.form.get("password")):
+            session["user_id"] = user[0]
+            return redirect("/")
+        else:
             return render_template("login.html")
-        
-        # Remember which user has logged in
-        session["user_id"] = id
-
-        # Redirect user to home page
-        return redirect("/")
     
     else:
         return render_template("login.html")
@@ -78,6 +74,13 @@ def logout():
 
     # Redirect user to login form
     return redirect("/")
+
+@app.route("/setup", methods=["GET", "POST"])
+def setup():
+    if request.method == "POST":
+        return render_template("setup.html")
+    else:
+        return render_template("setup.html")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():

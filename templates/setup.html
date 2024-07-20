@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Setup
+{% endblock %}
+
+{% block main %}
+    <div class="mb-3">
+    {% if system %}
+        <table class="table-primary mx-auto" width="50%">
+            <thead>
+                <tr>
+                    <th>Attribute</th>
+                    <th>Length Dependent</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attribute in system %}
+                    <tr>
+                        <td>{{ attribute.attribute }}</td>
+                        <td>{{ attribute.lengthDepend }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        Ranking System is empty.
+    {% endif %}    
+    </div>
+    <div class="mb-3">
+        <form action="/setup" method="post">
+            <div class="mb-3">
+                <input name="type" type="radio" value="yes/no"> Yes/No
+                <input name="type" type="radio" value="scale"> Scale
+                <input name="type" type="radio" value="percent"> %
+                <input name="type" type="radio" value="count"> Count
+                <input id="lengthDepend" name="lengthDepend" type="checkbox" value="lengthDepend">
+                <label for="lengthDepend">Length Dependent</label>
+            </div>
+            <div class="mb-3">
+                <button class="btn btn-primary" type="submit">Add Attribute</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
