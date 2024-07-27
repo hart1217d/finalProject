@@ -11,6 +11,7 @@
             <thead>
                 <tr>
                     <th>Attribute</th>
+                    <!-- Add a column for the type of attribute-->
                     <th>Length Dependent</th>
                 </tr>
             </thead>
@@ -18,11 +19,15 @@
                 {% for attribute in system %}
                     <tr>
                         <td>{{ attribute.attribute }}</td>
+                        <!-- Add a column for the type of attribute-->
                         <td>{{ attribute.lengthDepend }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
+        {% if ready == True %}
+            Your system is ready for ranking.
+        {% endif %}
     {% else %}
         Ranking System is empty.
     {% endif %}    
@@ -32,10 +37,16 @@
             <div class="mb-3">
                 <input name="type" type="radio" value="yes/no"> Yes/No
                 <input name="type" type="radio" value="scale"> Scale
+                <div>
+                    <input name="scale" type="radio" value="LoMeHi"> Low, Medium, High
+                    <input name="scale" type="radio" value="fiveScale"> 0 - 5
+                    <input name="scale" type="radio" value="tenScale"> 0 - 10
+                </div>
                 <input name="type" type="radio" value="percent"> %
                 <input name="type" type="radio" value="count"> Count
                 <input id="lengthDepend" name="lengthDepend" type="checkbox" value="lengthDepend">
                 <label for="lengthDepend">Length Dependent</label>
+                <input autocomplete="off" class="form-control mx-auto w-auto" name="attribute_name" placeholder="name" type="text">
             </div>
             <div class="mb-3">
                 <button class="btn btn-primary" type="submit">Add Attribute</button>

@@ -78,9 +78,80 @@ def logout():
 @app.route("/setup", methods=["GET", "POST"])
 def setup():
     if request.method == "POST":
+        user_id = str(session["user_id"])
+        system_info = ()
+
+        # Find or create system table
+        while not system_info:
+            cur.execute("SELECT system_name, ready, modified FROM systems WHERE user_id = ?", user_id)
+            system_info = cur.fetchone()
+            if not system_info:
+                system_name = "system" + user_id
+                cur.execute("INSERT INTO systems (user_id, system_name) VALUES (?, ?)", (user_id, system_name))
+                cur.execute(
+                    """
+                    CREATE TABLE ? (
+                    attribute_name TEXT NOT NULL,
+                    type TEXT NOT NULL,
+                    min INTEGER NOT NULL DEFAULT(0),
+                    max INTEGER NOT NULL DEFAULT(0),
+                    length_depend BOOLEAN DEFAULT(FALSE)
+                    )
+                    """
+                    , system_name)
+        
+        if not request.form.get("type") or not request.form.get("attribute_name"):
+            return render_template("setup.html")
+        
+        if request.form.get("type") == "yes/no":
+            attribute_name = request.form.get("attribute_name")
+            entries = (attribute_name, "yes/no", 0, 1, False)
+            if request.form.get("length_depend"):
+                entries[4] = True
+            cur.execute("INSERT INTO ? (attribute_name, type, min, max, length_depend) VALUES (?, ?, ?, ?, ?)", entries)
+        
+        elif request.form.get("type") == "scale":
+            if not request.form.get("scale"):
+                return render_template("setup.html")
+            attribute_name = request.form.get("attribute_name")
+            scale_min = 0
+            if request.form.get("scale") == "LoMeHi":
+                scale_max = 3
+            elif request.form.get("scale") == "fiveScale":
+                scale_max = 5
+            elif request.form.get("scale") == "tenScale":
+                scale_max = 10
+            entries = (attribute_name, "scale", scale_min, scale_max, False)
+            if request.form.get("length_depend"):
+                entries[4] = True
+            cur.execute("INSERT INTO ? (attribute_name, type, min, max, length_depend) VALUES (?, ?, ?, ?, ?)", entries)
+        
+        elif request.form.get("type") == "percent":
+            attribute_name = request.form.get("attribute_name")
+            entries = (attribute_name, "percent", 0, 1, False)
+            if request.form.get("length_depend"):
+                entries[4] = True
+            cur.execute("INSERT INTO ? (attribute_name, type, min, max, length_depend) VALUES (?, ?, ?, ?, ?)", entries)
+        
+        elif request.form.get("type") == "count":
+            attribute_name = request.form.get("attribute_name")
+            entries = (attribute_name, "count", 0, 1000, False)
+            if request.form.get("length_depend"):
+                entries[4] = True
+            cur.execute("INSERT INTO ? (attribute_name, type, min, max, length_depend) VALUES (?, ?, ?, ?, ?)", entries)
+        
         return render_template("setup.html")
+    
     else:
-        return render_template("setup.html")
+        user_id = str(session["user_id"])
+        cur.execute("SELECT system_name, ready, modified FROM systems WHERE user_id = ?", user_id)
+        system_info = cur.fetchone()
+        if not system_info:
+            return render_template("setup.html")
+        else:
+            system = cur.execute("SELECT * FROM ? ", system_info[0])
+            ready = system_info[1]
+            return render_template("setup.html", system=system, ready=ready)
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
