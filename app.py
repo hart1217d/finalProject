@@ -87,18 +87,17 @@ def setup():
             system_info = cur.fetchone()
             if not system_info:
                 system_name = "system" + user_id
-                cur.execute("INSERT INTO systems (user_id, system_name) VALUES (?, ?)", (user_id, system_name))
-                cur.execute(
-                    """
-                    CREATE TABLE ? (
+                query = """
+                    CREATE TABLE {} (
                     attribute_name TEXT NOT NULL,
                     type TEXT NOT NULL,
                     min INTEGER NOT NULL DEFAULT(0),
                     max INTEGER NOT NULL DEFAULT(0),
                     length_depend BOOLEAN DEFAULT(FALSE)
                     )
-                    """
-                    , system_name)
+                    """.format(system_name)
+                cur.execute("INSERT INTO systems (user_id, system_name) VALUES (?, ?)", (user_id, system_name))
+                cur.execute(query)
         
         if not request.form.get("type") or not request.form.get("attribute_name"):
             return render_template("setup.html")
@@ -108,7 +107,8 @@ def setup():
             entries = (attribute_name, "yes/no", 0, 1, False)
             if request.form.get("length_depend"):
                 entries[4] = True
-            cur.execute("INSERT INTO ? (attribute_name, type, min, max, length_depend) VALUES (?, ?, ?, ?, ?)", entries)
+            query = "INSERT INTO {} (attribute_name, type, min, max, length_depend) VALUES (?, ?, ?, ?, ?)".format(system_name)
+            cur.execute(query, entries)
         
         elif request.form.get("type") == "scale":
             if not request.form.get("scale"):
