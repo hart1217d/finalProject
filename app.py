@@ -81,12 +81,13 @@ def setup():
         user_id = str(session["user_id"])
         system_info = ()
 
+        system_name = "system" + user_id
+
         # Find or create system table
         while not system_info:
             cur.execute("SELECT system_name, ready, modified FROM systems WHERE user_id = ?", user_id)
             system_info = cur.fetchone()
             if not system_info:
-                system_name = "system" + user_id
                 query = """
                     CREATE TABLE {} (
                     attribute_name TEXT NOT NULL,
@@ -97,18 +98,24 @@ def setup():
                     )
                     """.format(system_name)
                 cur.execute("INSERT INTO systems (user_id, system_name) VALUES (?, ?)", (user_id, system_name))
+                con.commit()
                 cur.execute(query)
+                con.commit()
         
         if not request.form.get("type") or not request.form.get("attribute_name"):
             return render_template("setup.html")
         
+        length_depend = False
+        
+        if request.form.get("length_depend"):
+            length_depend = True
+        
         if request.form.get("type") == "yes/no":
             attribute_name = request.form.get("attribute_name")
-            entries = (attribute_name, "yes/no", 0, 1, False)
-            if request.form.get("length_depend"):
-                entries[4] = True
+            entries = (attribute_name, "Yes/No", 0, 1, length_depend)
             query = "INSERT INTO {} (attribute_name, type, min, max, length_depend) VALUES (?, ?, ?, ?, ?)".format(system_name)
             cur.execute(query, entries)
+            con.commit()
         
         elif request.form.get("type") == "scale":
             if not request.form.get("scale"):
@@ -121,26 +128,30 @@ def setup():
                 scale_max = 5
             elif request.form.get("scale") == "tenScale":
                 scale_max = 10
-            entries = (attribute_name, "scale", scale_min, scale_max, False)
-            if request.form.get("length_depend"):
-                entries[4] = True
-            cur.execute("INSERT INTO ? (attribute_name, type, min, max, length_depend) VALUES (?, ?, ?, ?, ?)", entries)
+            entries = (attribute_name, "Scale", scale_min, scale_max, length_depend)
+            query = "INSERT INTO {} (attribute_name, type, min, max, length_depend) VALUES (?, ?, ?, ?, ?)".format(system_name)
+            cur.execute(query, entries)
+            con.commit()
         
         elif request.form.get("type") == "percent":
             attribute_name = request.form.get("attribute_name")
-            entries = (attribute_name, "percent", 0, 1, False)
-            if request.form.get("length_depend"):
-                entries[4] = True
-            cur.execute("INSERT INTO ? (attribute_name, type, min, max, length_depend) VALUES (?, ?, ?, ?, ?)", entries)
+            entries = (attribute_name, "Percentage", 0, 1, length_depend)
+            query = "INSERT INTO {} (attribute_name, type, min, max, length_depend) VALUES (?, ?, ?, ?, ?)".format(system_name)
+            cur.execute(query, entries)
+            con.commit()
         
         elif request.form.get("type") == "count":
             attribute_name = request.form.get("attribute_name")
-            entries = (attribute_name, "count", 0, 1000, False)
-            if request.form.get("length_depend"):
-                entries[4] = True
-            cur.execute("INSERT INTO ? (attribute_name, type, min, max, length_depend) VALUES (?, ?, ?, ?, ?)", entries)
+            entries = (attribute_name, "Count", 0, 1000, length_depend)
+            query = "INSERT INTO {} (attribute_name, type, min, max, length_depend) VALUES (?, ?, ?, ?, ?)".format(system_name)
+            cur.execute(query, entries)
+            con.commit()
         
-        return render_template("setup.html")
+        query = "SELECT attribute_name, type, length_depend FROM {}".format(system_name)
+        cur.execute(query)
+        system = cur.fetchall()
+        ready = system_info[1]
+        return render_template("setup.html", system=system, ready=ready)
     
     else:
         user_id = str(session["user_id"])
@@ -149,7 +160,9 @@ def setup():
         if not system_info:
             return render_template("setup.html")
         else:
-            system = cur.execute("SELECT * FROM ? ", system_info[0])
+            query = "SELECT attribute_name, type, length_depend FROM {}".format(system_info[0])
+            cur.execute(query)
+            system = cur.fetchall()
             ready = system_info[1]
             return render_template("setup.html", system=system, ready=ready)
 

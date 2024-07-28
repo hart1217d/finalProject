@@ -11,16 +11,20 @@
             <thead>
                 <tr>
                     <th>Attribute</th>
-                    <!-- Add a column for the type of attribute-->
+                    <th>Type</th>
                     <th>Length Dependent</th>
                 </tr>
             </thead>
             <tbody>
                 {% for attribute in system %}
                     <tr>
-                        <td>{{ attribute.attribute }}</td>
-                        <!-- Add a column for the type of attribute-->
-                        <td>{{ attribute.lengthDepend }}</td>
+                        <td>{{ attribute[0] }}</td>
+                        <td>{{ attribute[1] }}</td>
+                        {% if attribute[2] == 0 %}
+                            <td>No</td>
+                        {% else %}
+                            <td>Yes</td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
             </tbody>
@@ -44,8 +48,8 @@
                 </div>
                 <input name="type" type="radio" value="percent"> %
                 <input name="type" type="radio" value="count"> Count
-                <input id="lengthDepend" name="lengthDepend" type="checkbox" value="lengthDepend">
-                <label for="lengthDepend">Length Dependent</label>
+                <input id="length_depend" name="length_depend" type="checkbox" value="length_depend">
+                <label for="length_depend">Length Dependent</label>
                 <input autocomplete="off" class="form-control mx-auto w-auto" name="attribute_name" placeholder="name" type="text">
             </div>
             <div class="mb-3">
